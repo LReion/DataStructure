@@ -13,8 +13,8 @@ void createDlistR(DLNode *&L, int a[], int n) {
   int i;
   L = (DLNode *)malloc(sizeof(DLNode));
   L->prior = nullptr;
-  L->next = nullptr r =
-      L; // 和单链表一样，r始终指向终端节点，开始头节点也是尾节点
+  L->next = nullptr;
+  r = L; // 和单链表一样，r始终指向终端节点，开始头节点也是尾节点
   for (i = 0; i < n; i++) {
     s = (DLNode *)malloc(sizeof(DLNode));
     s->data = a[i];
@@ -59,5 +59,15 @@ free(q); */
 
 // 循环单链表和循环双链表是由对应的单链表和双链表改造而来，只需在终端结点和头节点间建立联系即可。
 // 循环单链表终端结点的next指针指向表头结点；循环双链表的终端节点的next指针指向表托结点，头结点的prior
-// 指向表尾结点。需要注意的是，如果p指针沿着循环链表行走，则判断p走到表尾节点的条件是p->next=head, 
+// 指向表尾结点。需要注意的是，如果p指针沿着循环链表行走，则判断p走到表尾节点的条件是p->next=head,
 // 循环链表的各种操作均与非循环链表类似
+
+// 逆转数组
+void reverse(int a[], int left, int right, int k) {
+  int temp;
+  for (int i = left, j = right; i < left + k && i < j; ++i, --j) {
+    temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+  }
+}
