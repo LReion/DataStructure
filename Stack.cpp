@@ -169,3 +169,38 @@ int com(char exp[]) { // 后缀表达式计算函数
   }
   return stack[top];
 }
+
+// 链栈的应用
+/* 用不带头结点的单链表存储链栈，设计初始化栈、判断栈是否为空、进栈和出栈等相应的算法
+ */
+// 不带头结点的单链表lst为空的条件是lst=nullptr，进栈和出栈操作都是在表头进行的
+void initStac1(LNode *&lst) { // 初始化栈
+  lst = nullptr;
+}
+int isEmpty1(LNode *lst) { // 判断栈是否为空
+  if (lst == nullptr)
+    return 1;
+  else
+    return 0;
+}
+void push1(LNode *&lst, int x) { // 进栈
+  LNode *p;
+  p = (LNode *)malloc(sizeof(LNode));
+  p->next = nullptr;
+  p->data = x;
+  /* 下面是插入操作 */
+  p->next = lst; // 将链栈链接在新结点之后
+  lst = p;       // 将新结点作为链栈的第一个结点
+}
+
+void pop1(LNode *&lst, int &x) { // 元素出栈
+  LNode *p;
+  if (lst == nullptr)
+    return 0;
+  /*     删除结点操作 */
+  p = lst;
+  x = p->data;
+  lst = lst->next;
+  free(p);
+  return 1;
+}
