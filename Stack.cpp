@@ -1,4 +1,7 @@
+#include <iostream>
 #include <stdlib.h>
+
+using namespace std;
 #define maxSize 20
 // 顺序栈定义
 typedef struct {
@@ -102,4 +105,67 @@ int pop(LNode *lst, int &x) {
   lst->next = p->next;
   free(p);
   return 1;
+}
+
+// 顺序栈的应用
+/* C语言中算术运算符的括号只有小括号。编写算法，判断一个表达式中的括号是否正确配对，表达式已经存入字符数组exp[]中，
+表达式中字符个数为n */
+int match(char exp[], int n) {
+  char stack[maxSize]; // 两句话完成栈的定义和初始化
+  int top = -1;        // 考试中用这种写法可以节省时间
+  int i;
+  for (i = 0; i < n; i++) {
+    if (exp[i] == '(')
+      stack[++top] = '(';
+    if (exp[i] == ')') {
+      if (top == -1) // 如果当前遇到的括号是")”，而且栈已空，则不匹配，返回0
+        return 0;
+      else
+        --top; // 如果栈不空，则出栈
+      // 划掉两个括号的操作，当前的不入栈，而且栈顶元素出栈
+    }
+  }
+  if (top == -1) // 栈空（所有括号都被处理掉了），则匹配，返回1
+    return 1;
+  else // 否则括号不匹配
+    return 0;
+}
+
+/* 编写一个函数，求后缀表达式的数值，其中后缀表达式存于一个字符数组exp中，
+exp中最后一个字符为'\0'作为结束符，并且假设后缀式中的数字都只有一位。 */
+int op(int a, char Op, int b) { // 本函数是运算函数，用来完成算式 “a Op b”的运算
+  if (Op == '+')
+    return a + b;
+  if (Op == '-')
+    return a - b;
+  if (Op == '*')
+    return a * b;
+  if (Op == '/') {
+    if (b == 0) {
+      cout << "ERROR" << endl; // 这里需要判断，如果除数为0，则输出错误标记
+      return 0;
+    } else
+      return a / b;
+  }
+}
+// 当遇到数字时，将其转换为整型后进栈，当遇到运算符时，从栈顶取出两个操作数，进行运算后，将结果进栈，直到表达式结束。
+int com(char exp[]) { // 后缀表达式计算函数
+  int i, a, b, c;     // a, b为操作数，c来保存结果
+  int stack[maxSize]; // 栈的初始化和定义
+  int top = -1;
+  char Op; // Op用来取操作符
+  for (i = 0; exp[i] != '\0';
+       i++) { // 如果遇到操作数，则入栈等待处理，体现了栈的记忆功能
+    if (exp[i] >= '0' && exp[i] <= '9')
+      stack[++top] = exp[i] - '0'; // 字符型和整型的转换
+    else { // 如果遇到运算符，则说明前面待处理的数字的处理条件已经具备，开始运算
+      Op = exp[i]; // 取运算符
+      b = stack[top--];
+      // 取第二个操作数（因为第二个操作数后入栈，所以先出栈的是第二个操作数）
+      a = stack[top--]; // 取第一个操作数
+      c = op(a, Op, b); // 将两个操作数结合运算符Op进行运算，结果保存在c中
+      stack[++top] = c; // 运算结果入栈
+    }
+  }
+  return stack[top];
 }
