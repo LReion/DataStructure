@@ -21,7 +21,7 @@ typedef struct {
 SqQueue qu;
 // 循环队列
 // 队空操作
-qu.rear == qu.front; // 队空状态
+// qu.rear == qu.front; // 队空状态
 // 队满状态
 
 // 元素x进队操作（移动队尾指针）
@@ -33,32 +33,48 @@ qu.data[qu.rear] = x; */
 qu.data[qu.front] = x; */
 
 // 初始化队列算法
-void initQueue(SqQueue &qu) { 
-    qu.front = qu.rear = 0;  // 队首和队尾指针重合，并且指向0
- }
+void initQueue(SqQueue &qu) {
+  qu.front = qu.rear = 0; // 队首和队尾指针重合，并且指向0
+}
 
 // 判断队空算法
-int isQueueEmpty(SqQueue qu){
-    if(qu.front==qu.rear)
+int isQueueEmpty(SqQueue qu) {
+  if (qu.front == qu.rear)
     return 1;
-    else
+  else
     return 0;
 }
 
 // 进队算法
-int enQueue(SqQueue &qu,int x){
-  if((qu.rear+1)%maxSize==qu.front)
-  return 0;
-  qu.rear=(qu.rear+1)%maxSize;
-  qu.data[qu.rear]=x;
+int enQueue(SqQueue &qu, int x) {
+  if ((qu.rear + 1) % maxSize == qu.front)
+    return 0;
+  qu.rear = (qu.rear + 1) % maxSize;
+  qu.data[qu.rear] = x;
   return 1;
 }
 
 // 出队算法
-int deQueue(SqQueue &qu,int&x){
-  if(qu.front==qu.rear)
-  return 0;
-  qu.front=(qu.front+1)%maxSize;
-  x=qu.data[front];
+int deQueue(SqQueue &qu, int &x) {
+  if (qu.front == qu.rear)
+    return 0;
+  qu.front = (qu.front + 1) % maxSize;
+  x = qu.data[qu.front];
   return 1;
 }
+
+// 链队
+LiQueue *liq;
+
+// 队空状态
+/* lqu->rear==nullptr 或者 lqu->front==nullptr */
+
+// 元素进队操作
+/* lqu->rear->next=p;
+lqu->rear=p; */
+
+// 元素出队操作
+/* p = lqu->front;
+lqu->front = p->next;
+x = p->data;
+free(p); */

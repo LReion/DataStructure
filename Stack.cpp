@@ -56,7 +56,7 @@ void initStack(LNode *&lst) {
 // 判断栈空代码
 /* 当栈空时返回1，否则返回0，代码如下 */
 int isEmpty(LNode *lst) { // 判断是否为空
-  if (lst->next = nullptr)
+  if (lst->next == nullptr)
     return 1;
   else
     return 0;
@@ -128,6 +128,7 @@ int op(int a, char Op, int b) { // 本函数是运算函数，用来完成算式
     } else
       return a / b;
   }
+  return 0;
 }
 // 当遇到数字时，将其转换为整型后进栈，当遇到运算符时，从栈顶取出两个操作数，进行运算后，将结果进栈，直到表达式结束。
 int com(char exp[]) { // 后缀表达式计算函数
@@ -174,7 +175,7 @@ void push1(LNode *&lst, int x) { // 进栈
   lst = p;       // 将新结点作为链栈的第一个结点
 }
 
-void pop1(LNode *&lst, int &x) { // 元素出栈
+int pop1(LNode *&lst, int &x) { // 元素出栈
   LNode *p;
   if (lst == nullptr)
     return 0;
