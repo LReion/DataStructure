@@ -1,3 +1,4 @@
+#include <malloc.h>
 #define maxSize 20
 // 顺序队列定义
 typedef struct {
@@ -78,3 +79,48 @@ lqu->rear=p; */
 lqu->front = p->next;
 x = p->data;
 free(p); */
+
+// 初始化链表算法
+void initQueue(LiQueue *&lqu) {
+  lqu = (LiQueue *)malloc(sizeof(LiQueue));
+  lqu->front = lqu->rear = nullptr;
+}
+
+// 判断队空算法
+int isQueueEmpty(LiQueue *lqu) {
+  if (lqu->rear == nullptr ||
+      lqu->front == nullptr) // 如果front或rear为空，则队列中没有节点
+    return 1;
+  return 0;
+}
+
+// 入队算法
+void enQueue(LiQueue *lqu, int x) {
+  QNode *p;
+  p = (QNode *)malloc(sizeof(QNode)); // 为插入数据申请结点存放
+  p->data = x;
+  p->next = nullptr;
+  if (lqu->rear ==
+      nullptr) // 如果队尾指针为空，则说明插入的数据是队列的第一个结点
+    lqu->front = lqu->rear = p;
+  else { // 否则，将插入节点放在队尾
+    lqu->rear->next = p;
+    lqu->rear = p;
+  }
+}
+
+// 出队算法
+int deQueue(LiQueue *lqu, int &x) {
+  QNode *p;
+  if (lqu->rear == nullptr) // 队空不能出队
+    return 0;
+  else
+    p = lqu->front;
+  if (lqu->front == lqu->rear) // 队中只有一个节点，删除后队列队空（头尾指针指向空）
+    lqu->front = lqu->rear = nullptr;
+  else
+    lqu->front = lqu->front->next;
+  x = p->data;
+  free(p);
+  return 1;
+}
