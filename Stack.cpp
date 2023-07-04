@@ -186,3 +186,48 @@ int pop1(LNode *&lst, int &x) { // 元素出栈
   free(p);
   return 1;
 }
+
+/* 1. 为了充分利用空间，顺序栈s0、s1共享一个存储区elem[0, ... , maxSize-1]。
+试设计共享栈s0、s1以及有关入栈和出栈的算法，假设栈中元素为int型。要求
+（1）给出基本设计思想
+（2）根据设计思想，采用C或C++语言描述算法（对于共享栈要写出其结构定义），关键之处给出注释
+*/
+
+// 共享栈的结构定义
+typedef struct {
+  int elem[maxSize]; // 栈空间，maxSize是已经定义的常量
+  int top[2];        // top[0]为s0栈顶，top[1]为s1栈顶
+} ShStack;
+
+// 入栈操作
+int push(ShStack &st, int stNo, int x) {
+  if (st.top[0] + 1 < st.top[1]) { // 栈未满，则元素可以入栈
+    if (stNo == 0) {               // 元素入s0栈
+      st.elem[++st.top[0]] = x;
+      return 1;             // 入栈成功，返回1
+    } else if (stNo == 1) { // 元素入s1栈
+      st.elem[++st.top[1]] = x;
+      return 1; // 入栈成功返回1
+    } else
+      return -1; // 栈编号错误，返回-1
+  } else
+    return 0; // 栈满，返回0
+}
+
+// 出栈操作
+int pop(ShStack &st, int stNo, int &x) { // stNo是栈的编号，指示元素x接受哪个
+  if (stNo == 0) {                       // s0元素出栈
+    if (st.top[0] != -1) {               // s0不空，则可以出栈
+      x = st.elem[st.top[0]--];
+      return 1; // 出栈成功返回1
+    } else
+      return 0;                 // 栈空，返回0
+  } else if (stNo == 1) {       // s1元素出栈
+    if (st.top[1] != maxSize) { // 栈不满
+      x = st.elem[st.top[1]++];
+      return 1; // 出栈成功，返回1
+    } else
+      return 0; // 栈空，返回0
+  } else
+    return -1; // 编号错误，返回-1
+}
