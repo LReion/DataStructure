@@ -13,22 +13,22 @@ void swap(char &a, char &b) { // 交换函数
   b = temp;
 }
 
-void Perm(char list[], int k, int m) { // 递归函数
+void Perm(char list[], int start, int end) { // 递归函数
   int i;
-  if (k == m) { // 递归出口，当只有一个字符时，其全排列就是其本身
-    for (i = 0; i <= m; i++)
+  if (start == end) { // 递归出口，当只有一个字符时，其全排列就是其本身
+    for (i = 0; i <= end; i++)
       cout << list[i];
     cout << endl;
   } else {
-    for (i = k; i <= m; i++) { // 递归体，将第一个字符与其余字符进行交换
-      swap(list[k], list[i]);
-      Perm(list, k + 1, m); // 递归求出除第一个字符外其余字符的全排列
-      swap(list[k], list[i]);
+    for (i = start; i <= end; i++) { // 递归体，将第一个字符与其余字符进行交换
+      swap(list[start], list[i]);
+      Perm(list, start + 1, end); // 递归求出除第一个字符外其余字符的全排列
+      swap(list[start], list[i]);
     }
   }
 }
-int main(){
-    char a[]= {'a','b','c'};
-    Perm(a,0,2);
-    return 0;
+int main() {
+  char a[] = {'a', 'b', 'c'};
+  Perm(a, 0, 2);
+  return 0;
 }

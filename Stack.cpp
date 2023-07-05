@@ -286,3 +286,62 @@ int deQueue(SqStack &s1, SqStack &s2, int &x) {
     }
   }
 }
+
+// 在算法中，扫描程序中的每一个字符，当扫描到每个左花括号、左方括号、左圆括号时，
+// 令其进栈；当扫描到右花括号、右方括号、右圆括号时，则检查栈顶是否为相应的左括号，
+// 若是则做退栈处理，若不是则表明出现了语法错误，返回0。当扫描到程序文件结尾时，
+// 若栈为空，则表明没有发现括号匹配错误，返回1；否则表明栈中还有未匹配的括号，
+// 返回0。另外，对于一对单引号或双引号内的字符不进行括号匹配检查。
+
+int bracketCheck(char f[]) {
+  SqStack S;
+  char ch;
+  char *p = f;
+  while (*p != '\0') {
+    if (*p == 39) {
+      ++p;
+      while (*p != 39)
+        ++p;
+      ++p;
+    } else if (*p == 34) {
+      ++p;
+      while (*p != 34)
+        ++p;
+      ++p;
+    } else {
+      switch (*p) {
+      case '{':
+      case '[':
+      case '(':
+        push(S, *p);
+        // 出现左括号，进栈
+        break;
+      case ']':
+        getTop(S, ch);
+        if (ch == '[')
+          pop(S, ch);
+        else
+          return 0;
+        break;
+      case ']':
+        getTop(S, ch);
+        if (ch == '[') {
+          pop(S, ch);
+        } else
+          return 0;
+        break;
+      case ')':
+        getTop(S, ch);
+        if (ch == '(')
+          pop(S, ch);
+        else
+          return 0;
+      }
+      ++p;
+    }
+  }
+  if (isEmpty(S))
+    return 1;
+  else
+    return 0;
+}
