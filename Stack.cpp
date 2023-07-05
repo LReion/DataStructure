@@ -1,4 +1,5 @@
 #include <iostream>
+#include <malloc.h>
 #include <stdlib.h>
 
 using namespace std;
@@ -230,4 +231,58 @@ int pop(ShStack &st, int stNo, int &x) { // stNo是栈的编号，指示元素x�
       return 0; // 栈空，返回0
   } else
     return -1; // 编号错误，返回-1
+}
+
+/* 2）s0的栈顶为top0，s0入栈操作为：top0先自增1；然后存入元素；
+出栈操作为：先取出栈顶元素，top0再自减1。s1的栈顶为top1，s1
+入栈操作为：top1先自减1，然后存入元素；出栈操作为：先取出栈顶元素，
+top1再自增1
+（1）基本思想
+栈的特点是先进后出，队列的特点是先进先出。所以，当用两个栈s1和s2模拟一个队列时，
+s1作为输入栈，逐个元素压栈，以此模拟队列元素的入栈操作；当需要出队时，将栈s1退栈
+并逐个压入栈s2中，s1中最先入栈的元素在s2中处于栈顶。s2退栈，相当于队列的出队操作，
+实现了先进先出。只有栈s2为空且s1也为空，才算是队列空。
+（2）算法描述 */
+
+// 实现队列的入队操作
+int enQueue(SqStack &s1, SqStack &s2, int x) {
+  /* s1是容量为maxSize的栈。本算法将x入栈，若入栈成功则返回1，否则返回0*/
+  int y;
+  if (s1.top == maxSize - 1) { // 如果栈s1满，则看s2是否为空
+    if (!isEmpty(s2))          // 如果栈s2不为空，这是s1不能再入栈
+      return 0;
+    else if (isEmpty(s2)) { // 如果s2为空
+      while (!isEmpty(s1)) { // 而且如果s1不空，则将s1中元素逐个出栈并入栈s2
+        pop(s1, y);
+        push(s2, y);
+      }
+      push(s1, x); // 入栈x
+      return 1;
+    }
+  } else { // 如果s1为没有满，则直接入栈即可
+    push(s1, x);
+    return 1;
+  }
+  return 0;
+}
+
+// 实现队列的出队操作
+int deQueue(SqStack &s1, SqStack &s2, int &x) {
+  /* s2栈顶元素出栈，实现出队操作，x接受出队元素，若成功则返回1，否则返回0 */
+  int y;
+  if (!isEmpty(s2)) { // 如果s2不空，则直接将栈顶元素出栈
+    pop(s2, x);
+    return 1;
+  } else {
+    if (isEmpty(s1))
+      return 0;
+    else {
+      while (!isEmpty(s1)) {
+        pop(s2, y);
+        push(s2, y);
+      }
+      pop(s2, x);
+      return 1;
+    }
+  }
 }
