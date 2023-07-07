@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 #define maxSize 20
 using namespace std;
 typedef struct {
@@ -38,9 +39,24 @@ int strassign(Str1 &str, char *ch) {
       c = ch; // 通过c指针复制串
       for (int i = 0; i <= len; i++, c++)
         str.ch[i] = *c; // 将c中字符拷贝到ch数组中
-      /* 循环条件中之所以使用"<="，是为了将ch最后的'\0'复制到新串中 "*/
+      /* 循环条件中之所以使用"<="，是为了将ch最后的'\0'复制到新串中作为结束标记"*/
       str.length = len;
       return 1;
     }
   }
+}
+
+// 取串长度操作
+int strlength(Str1 str) { return str.length; }
+
+// 串比较
+// 设两串S1和S2中的待比较字符分别为a和b，如果a的ASCII码
+// 小于b的ASCII码，则称S1小于S2；如果a的ASCII码大于b的ASCII码，则称S1大于S2；
+// 如果相等则继续比较两串中的下一对字符。经过上述比较后，在没有比较出S1和S2大小的情况下，
+// 先结束的串为较小串，两串同时结束则返回两串相等标记
+int strcompare(Str1 s1, Str1 s2) {
+  for (int i = 0; i < s1.length && i < s2.length; ++i)
+    if (s1.ch[i] != s2.ch[i])
+      return s1.ch[i] - s2.ch[i];
+  return s1.length - s2.length;
 }
