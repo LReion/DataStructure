@@ -60,3 +60,69 @@ int strcompare(Str1 s1, Str1 s2) {
       return s1.ch[i] - s2.ch[i];
   return s1.length - s2.length;
 }
+
+// 串连接操作
+int concat(Str1 &str, Str1 str1, Str1 str2) {
+  if (str.ch) {
+    free(str.ch);
+    str.ch = nullptr;
+  }
+  str.ch = (char *)malloc(sizeof(char) * (str1.length + str2.length + 2));
+  if (str.ch == nullptr)
+    return 0;
+  int i = 0;
+  while (i < str1.length) {
+    str.ch[i] = str1.ch[i];
+    ++i;
+  }
+  int j = 0;
+  while (j <= str2.length) {
+    str.ch[i + j] = str.ch[j];
+    ++j;
+  }
+  str.length = str1.length + str2.length;
+  return 1;
+}
+
+// 求子串的操作
+// 从给定串中某一位置开始到某一位置结束的串操作称为求字串操作
+// （规定开始位置总在结束位置前面），如下面的代码实现了求str串中
+// 从pos位置开始，长度为len的字串，字串由substr返回给用户
+int substrin(Str1 &substr, Str1 str, int pos, int len) {
+  // 检查开始位置，长度是否合法，如果不合法则返回0
+  if (pos < 0 || pos > str.length || len < 0 || len > str.length - pos)
+    return 0;
+  if (substr.ch) {       // 如果字串不为空串
+    free(substr.ch);     // 释放字串
+    substr.ch = nullptr; // 设置好空指针
+  }
+  if (len == 0) {        // 如果长度是0
+    substr.ch = nullptr; // 则直接返回空串
+    substr.length = 0;   // 空串长度为0
+    return 1;
+  } else { // len不为0
+    substr.ch = (char *)malloc(
+        sizeof(char) * (len + 1)); // 为字串分配空间，len+1，是为了存放'\0'
+    int i = pos;                   // 开始位置
+    int j = 0;                     // 偏移位置
+    while (i < pos + len) { // 从开始位置开始，复制len个字符到字串中
+      substr.ch[j] = str.ch[i];
+      ++i;
+      ++j;
+    }
+    substr.ch[j] = '\0'; // 设置字串结束标志
+    substr.length = len; // 设置字串长度
+    return 1;
+  }
+}
+
+// 串清空操作
+int cleanstring(Str1 &str) {
+  if (str.ch) { // 如果串不为空串
+    free(str.ch);
+    str.length = 0;
+  }
+  // 如果是空串
+  str.length = 0;
+  return 1;
+}
