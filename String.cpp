@@ -151,3 +151,70 @@ int index(Str1 str, Str1 substr) {
   else
     return -1;
 }
+
+// 将串str中所有值为ch1的字符转换成ch2的字符，如果str为空串，或者串中不含ch1的字符，则什么都不做
+void convect(Str1 &str, char &ch1, char &ch2) {
+  if (str.ch) {
+    for (int i = 0; i < str.length; i++)
+      if (str.ch[i] == ch1)
+        str.ch[i] = ch2;
+  } else {
+    str.ch = nullptr;
+    str.length = 0;
+  }
+}
+
+// 实现串str的逆转函数，如果str为空串
+void reverse(Str1 &str) {
+  if (str.ch) {
+    char temp;
+    for (int i = 0, j = str.length - 1; i < j; i++, j--) {
+      temp = str.ch[i];
+      str.ch[i] = str.ch[j];
+      str.ch[j] = temp;
+    }
+  } else {
+    str.ch = nullptr;
+    str.length = 0;
+  }
+}
+
+// 删除str中值为ch的所有字符，如果str为空串，或者串中不含ch的字符，则什么都不做
+void deleteChar(Str1 &str, char &ch) {
+  if (str.ch) {
+    for (int i = 0; i < str.length; i++)
+      if (str.ch[i] == ch) {
+        for (int j = i; i < str.length; j++)
+          str.ch[j] = str.ch[j + 1]; // 用后续字符来覆盖前面的字符
+        str.ch[i] = ch;
+      }
+  } else {
+    str.ch = nullptr;
+    str.length = 0;
+  }
+}
+
+// 从串str的pos位置开始，求出与substr串匹配的字串位置，如果str为空串，或者串中不含
+// 与substr匹配的字串，则返回-1做标记
+int getPos(Str1 &str, Str1 &substr) {
+  if (str.ch) {
+    int i = 0, j = 0, k = i;
+    while (i < str.length && j < substr.length) {
+      if (str.ch[i] == substr.ch[j]) { // 如果相等继续往后匹配
+        i++;
+        j++;
+      } else { // 如果不相等，则对主链的下一个开始匹配
+        i = ++k;
+        j = 0; // 模式串从头开始
+      }
+    }
+    if (j >= substr.length) { // 如果匹配长度大于等于
+      return k;
+    } else // 如果没有匹配成功
+      return -1;
+  } else { // 如果主串为空串
+    str.ch = nullptr;
+    str.length = 0;
+    return -1;
+  }
+}
