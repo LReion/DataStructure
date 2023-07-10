@@ -10,10 +10,9 @@ void build_next(Str1 &substr, int next[]) {
             substr.ch[j]) { // 将自己与自己匹配（如果匹配成功，则同时后移）
       ++i;
       ++j;
-      next[i] =
-          j; // 并且记录匹配的长度，以便于后面不匹配后，对应i匹配的j从第几位开始
+      next[i] = j; // 记录匹配到当前i位置匹配的成功的j位置
     } else
-      j = next[j]; // 不匹配后，从第next[j]位开始匹配
+      j = next[j]; // 不匹配后，当前是j位置，根据next[j]来获取当前位置i匹配成功的j位置，
   }
 }
 
@@ -32,3 +31,7 @@ int kmp_search(Str1 str, Str1 substr, int next[]) {
   else
     return 0;
 }
+
+// KMP算法的改进，next数组的改进，使得next数组的值更加合理
+// 模式串可能在1到5的位置上的字符完全相等，因此较为聪明的做法是在
+// j等于5处发生不匹配时，直接跳过位置1到4的多余比较
