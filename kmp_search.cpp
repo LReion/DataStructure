@@ -1,5 +1,5 @@
 #include "String.cpp"
-void build_next(Str1 &substr, int next[]) {
+void build_next1(Str1 &substr, int next[]) {
   // 当模式串的第j个字符失配，从模式串的第next[j]个继续往后匹配
   // 将模式串逐个与自己匹配来记录next数组
   int i = 1, j = 1; // 串从数组下标1位置开始存储，因此初值为1

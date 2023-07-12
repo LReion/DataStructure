@@ -180,41 +180,155 @@ void reverse(Str1 &str) {
 }
 
 // 删除str中值为ch的所有字符，如果str为空串，或者串中不含ch的字符，则什么都不做
-void deleteChar(Str1 &str, char &ch) {
-  if (str.ch) {
+void del(Str1 &str, char &ch) {
+  if (str.ch) { // 不为空串
     for (int i = 0; i < str.length; i++)
       if (str.ch[i] == ch) {
         for (int j = i; i < str.length; j++)
           str.ch[j] = str.ch[j + 1]; // 用后续字符来覆盖前面的字符
-        str.ch[i] = ch;
+        str.length--;
+        str.ch[str.length] = '\0'; // 添加结束字符
       }
   } else {
     str.ch = nullptr;
     str.length = 0;
   }
 }
+// del改进版本
+void del2(Str1 &str, char ch) {
+  if (str.length != 0) {
+    int ch_num = 0;
+    int i, j;
+    while (str.ch[i] != '\0') {
+      if (str.ch[i] == ch) {
+        ++ch_num;
+        for (
+            j = i + 1; str.ch[j] != '\0';
+            j++) // 将每个待删字符到后一个待删字符之间的字符向前移动i个位置，i是目前扫描到的待删除字符的个数，这样就能覆盖掉待删字符
+          str.ch[j - ch_num] = str.ch[j];
+        i = j;
+        --str.length;
+      } else
+        ++i;
+    }
+    str.ch[str.length] = '\0';
+  }
+}
 
 // 从串str的pos位置开始，求出与substr串匹配的字串位置，如果str为空串，或者串中不含
 // 与substr匹配的字串，则返回-1做标记
-int getPos(Str1 &str, Str1 &substr) {
-  if (str.ch) {
-    int i = 0, j = 0, k = i;
-    while (i < str.length && j < substr.length) {
-      if (str.ch[i] == substr.ch[j]) { // 如果相等继续往后匹配
-        i++;
-        j++;
-      } else { // 如果不相等，则对主链的下一个开始匹配
-        i = ++k;
-        j = 0; // 模式串从头开始
-      }
+void build_next(Str1 &substr, int next[]) {
+  // 当模式串的第j个字符失配，从模式串的第next[j]个继续往后匹配
+  // 将模式串逐个与自己匹配来记录next数组
+  int i = 1, j = 1; // 串从数组下标1位置开始存储，因此初值为1
+  next[0] = 0;
+  while (i < substr.length) {
+    if (j ==
+            0 || // 如果找到第一个仍没有匹配，则会出现j=0的情况，然后i跳到下一个字符与j来寻找配对字符
+        substr.ch[i] == substr.ch[j]) { // (计算最大公共前后缀)
+      ++i;
+      ++j;
+      next[i] = j; // 记录匹配到当前i位置匹配的成功的j位置
+    } else
+      j = next[j]; // 没有匹配，往前找，看能否匹配
+  }
+}
+int getPos(Str1 &str, Str1 &substr, int pos) {
+  int next[substr.length];
+  build_next(substr, next);
+  int i = pos, j = i;
+  while (i <= str.length && j <= substr.length) {
+    if (j == 0 || str.ch[i] == substr.ch[i]) {
+      ++i;
+      ++j;
+    } else {
+      j = next[j];
     }
-    if (j >= substr.length) { // 如果匹配长度大于等于
-      return k;
-    } else // 如果没有匹配成功
-      return -1;
-  } else { // 如果主串为空串
-    str.ch = nullptr;
-    str.length = 0;
+  }
+  if (j > substr.length) {
+    return i - substr.length;
+  } else {
     return -1;
   }
+}
+
+// 采用定长顺序存储表示串，编写一个函数，删除串中从下标为i的字符开始的j个字符
+// 如果下标为i的字符没有足够的j,则有几个删几个
+void deletePos(Str1 &str, int i, int j) {
+  if (i < 0 || i >= str.length || j < 0) // 判断位置是否合法
+    return; // 如果位置不合法，返回1标识删除错误
+  else {    // 从i开始，删除j
+    for (int k = i + j; k < str.length; ++k)
+      str.ch[k - j] = str.ch[k];
+    str.length -= (str.length - i < j ? str.length - i : j);
+    // 调整串长，需要考虑两种情况
+    str.ch[str.length] = '\0';
+  }
+}
+
+// 采用顺序存储方式存储串，编写一个函数，将串str1中的下标i到下标j之间的字符
+// （包括i和j两个位置上的字符）用str2串替换
+int replace(Str1 &str1, int i, int j, Str1 &str2) {
+  if (i < 0 || j < 0 || i > str1.length || j > str1.length || i > j)
+    return 0;
+  else {
+    if (i + j > str1.length) {
+      for (int k = i; k < str1.length; k++)
+        str1.ch[k] = str2.ch[k - i];
+      return 1;
+    } else {
+      for (int k = i; k < str1.length - j; k++)
+        str1.ch[k] = str2.ch[k - i];
+      return 1;
+    }
+  }
+}
+
+// 编写一个函数，计算一个字串在一个主串中出现的次数，如果该字串不出出现，则返回0
+// 本题不考虑主串重叠的情况，如：主串为aaaa，子串为aaa，考虑字串重叠结果为2
+// 不考虑子串重叠结果为1
+int computeOverlap(Str1 &str1, Str1 &str2) {
+  if (str1.length < str2.length)
+    return -1;
+  else {
+    int i = 0, j = 1, k = i;
+    int count = 0;
+    while (i < str1.length &&
+           j < str2.length) { // i和j的位置都要小于各自对应的长度
+      if (str1.ch[i] == str2.ch[j]) { // 如果相等，继续往后比
+        ++i;
+        ++j;
+      } else {   // 出现不匹配
+        j = 1;   // 模式串从头开始比
+        i = ++k; // 主串从下一个开始
+      }
+
+      if (j >
+          str2.length) { // 如果对比的途中，j的长度大于等于模式串的长度，则代表匹配成功
+        ++count;         // 记录匹配成功的次数
+        j = 1;           // 继续对主串进行匹配
+        i = ++k;
+      }
+    }
+    return count;
+  }
+}
+
+// 构造出串的链表节点数据结构（每个结点内存储一个字符），编写一个函数，找出串str1中第一个不在str2中出现的字符
+typedef struct SNode {
+  char ch;
+  struct SNode *next;
+} SNode;
+char findFirst(SNode *str1, SNode *str2) {
+  for (SNode *p = str1; p != nullptr; p = p->next) {
+    bool flag = false;
+    for (SNode *q = str2; q != nullptr; q = q->next)
+      if (p->ch == q->ch) {
+        flag = false;
+        break;
+      }
+    if (flag == false)
+      return p->ch;
+  }
+  return '\0';
 }
