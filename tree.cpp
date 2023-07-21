@@ -162,7 +162,7 @@ void posttrave(BTNode *p, int k) {
 // 如果它有右子树，则将右子树的根节点入队。然后出队列，对出队的结点访问
 void level(BTNode *p) {
   int front, rear;
-  BTNode *que[maxSize];
+  BTNode *que[maxSize]; // 定义一个循环队列，用来记录将要访问的层次上的结点
   front = rear = 0;
   BTNode *q;
   if (p != nullptr) {
@@ -184,3 +184,272 @@ void level(BTNode *p) {
     }
   }
 }
+
+// 假设二叉树采用二叉链表存储结构存储，设计一个算法，
+// 求出该二叉树的宽度（具有节点数最多的那一层的节点数）
+// 要求含有最多结点数的层上的结点数，可以分别求出每层的结点数
+// 然后从中选出最多的
+/* 下面定义的这个结构型为顺序非循环队列的队列元素，可以存储结点指针以及结点所在的层次号
+ */
+typedef struct {
+  BTNode *p; // 结点指针
+  int lno;   // 节点所在层次号
+} St;
+int maxNode(BTNode *p) {
+  St que[maxSize];
+  int front, rear; // 定义顺序非循环队列
+  int Lno = 0, i, j, n, max = 0;
+  front = rear = 0; // 队列置空
+  BTNode *q;
+  if (p != nullptr) {
+    ++rear;
+    que[rear].p = p;   // 树根入队
+    que[rear].lno = 1; // 树根所在层次号设置为1
+    while (front != rear) {
+      ++front;
+      q = que[front].p;
+      Lno = que[front].lno; // Lno用来存取当前结点的层次号
+      if (q->lchild != nullptr) {
+        ++rear;
+        que[rear].p = q->lchild;
+        que[rear].lno = Lno + 1; // 根据当前结点的层次号，推知其孩子的层次号
+      }
+      if (q->rchild != nullptr) {
+        ++rear;
+        que[rear].p = q->rchild;
+        que[rear].lno = Lno + 1;
+      }
+    }
+    // 循环结束，Lno中保存了这颗二叉树的最大层数
+    // 以下代码找出了含有结点最多的层数中的节点数
+    max = 0;
+    for (i = 1; i <= Lno; i++) {
+      n = 0;
+      for (j = 0; j < rear; j++) {
+        if (que[j].lno == i) {
+          ++n;
+        }
+        if (max < n)
+          max = n;
+      }
+      return max;
+    }
+  } else
+    return 0; // 空树直接返回0
+  return 0;
+}
+
+// 二叉树遍历算法的改进
+// 深度优先遍历算法都是用递归函数来实现的，这是很低效的，
+// 原因在于系统帮你调用了一个栈，并做了诸如保护现场和恢复现场等复杂的操作，
+// 才使得遍历可以用非常简洁的代码实现。
+
+// 二叉树深度优先遍历算法的非递归实现
+// 要写出其遍历的非递归算法，主要任务就是用自己
+// 定义的栈来代替系统栈的功能
+// 由此可以写出以下代码
+void preorderNorecursion(BTNode *bt) {
+  if (bt != nullptr) {
+    BTNode *Stack[maxSize]; // 定义一个栈
+    int top = -1;           // 栈顶指针
+    BTNode *p;
+    Stack[++top] = bt; // 根节点入栈
+    while (top != -1) {
+      p = Stack[top--]; // 栈顶元素出栈
+      visit(p);         // 访问栈顶元素
+      if (p->lchild != nullptr) {
+        Stack[++top] = p->lchild; // 栈顶结点的左孩子存在，则左孩子入栈
+      }
+      if (p->rchild != nullptr) {
+        Stack[++top] = p->rchild; // 栈顶结点的右孩子存在，则右孩子入栈
+      }
+    }
+  }
+}
+
+// 中序遍历非递归算法
+void inorderNorecursion(BTNode *bt) {
+  if (bt != nullptr) {
+    BTNode *Stack[maxSize];
+    BTNode *p;
+    int top = -1;
+    p = bt;
+    // 下面这个循环完成中序遍历
+    // 当p不为空或者栈不为空时，循环继续，因为在左子树出栈过程中会出现栈为空的情况
+    // 但此时p非空，根据这一点来维持循环的进行
+    while (top != -1 || p != nullptr) {
+      while (p != nullptr) // 左孩子存在，则左孩子入栈
+      {
+        Stack[++top] = p;
+        p = p->lchild;
+      }
+      if (top != -1) { // 在栈不空的情况下出栈并输出出栈结点
+        p = Stack[top--];
+        visit(p);
+        p = p->rchild; // 转向右子树
+      }
+    }
+  }
+}
+
+// 后序遍历非递归算法
+// 后序遍历的非递归算法比较复杂，需要用到两个栈
+// 逆后序遍历序列是先序遍历过程中对左右子树遍历顺序交换得到的结果
+// 因此需要两个栈，一个栈stack1用来做辅助做逆后序遍历，另一个栈stack2用来存储逆后序遍历的结果
+// 然后将stack2中元素全部出栈，所得到的序列即为后序遍历序列
+void postorderNorecursion(BTNode *bt) {
+  if (bt != nullptr) {
+    // 定义两个栈
+    BTNode *stack1[maxSize];
+    int top1 = -1;
+    BTNode *stack2[maxSize];
+    int top2 = -1;
+    BTNode *p = nullptr;
+    stack1[++top1] = bt; // 根节点入栈
+    while (top1 != -1) {
+      p = stack1[top1--];
+      stack2[++top2] = p; // 栈1出栈，栈2入栈, 输出改为入栈stack2
+      if (p->lchild != nullptr) {
+        stack1[++top1] = p->lchild;
+      }
+      if (p->rchild != nullptr) {
+        stack1[++top1] = p->rchild;
+      }
+    }
+    while (top2 != -1) {
+      /* 出栈序列即为后续遍历序列 */
+      p = stack2[top2--];
+      visit(p); // 访问p的函数
+    }
+  }
+}
+
+// 线索二叉树
+// 二叉树非递归遍历算法避免了系统栈的调用，提高了一定的执行效率。
+// 线索二叉树可以把用户栈也省掉，把二叉树的遍历过程线性化，进一步提高了效率。
+// n个结点的二叉树有n+1个空链域，如果把这些空链域用来存放指向结点在某种遍历次序下的前驱和后继的指针，
+// 就可以把二叉树看成一个链表结构，从而可以像遍历链表那样来遍历二叉树，进而提高效率。
+
+// 1）如果ltag=0，则表示lchild为指针，指向结点的左孩子；如果ltag=1，则表示lchild为线索，指向结点的直接前驱
+// 2）如果rtag=0，则表示rchild为指针，指向结点的右孩子；如果rtag=1，则表示rchild为线索，指向结点的直接后驱
+// 对应的线索二叉树的结点定义如下：
+typedef struct TBTNode {
+  char data;      // 数据域
+  int ltag, rtag; // 线索标记
+  struct TBTNode *lchild;
+  struct TBTNode *rchild;
+} TBTNode;
+
+// 线索二叉树可以分为前序线索二叉树、中序线索二叉树和后序线索二叉树。
+// 对一棵树中所有结点的空指针按照某种遍历方法加线索的过程叫做线索化，
+// 被线索化了的二叉树成为线索二叉树。
+
+// 中序线索化分析
+// 1）既然要对二叉树进行中序线索化，首先要有中序遍历的框架，这里采用二叉树中序递归遍历算法，在遍历过程中连接上合适的线索即可
+// 2）线索化的规则是，左线索指针指向当前节点在中序遍历中的前驱节点，右线索指针指向后继结点。因此需要一个指针p指向当前正在访问的节点
+// pre是指向p的前驱节点，p的左线索如果存在，则让其指向pre，pre的右线索如果存在，则让其指向p，因为p是pre的后继节点，这样就完成了
+// 一对线索的的连接
+void InThread(TBTNode *p, TBTNode *&pre) {
+  if (p != nullptr) {
+    InThread(p->lchild, pre);
+    if (p->lchild == nullptr) {
+      p->lchild = pre;
+      p->ltag = 1;
+    }
+    if (pre != nullptr && pre->rchild == nullptr) {
+      pre->rchild = p;
+      pre->rtag = 1;
+    }
+    pre = p; // pre指向当前的p，作为p将要指向的下一个结点的前驱表示指针
+    p = p->rchild; // p指向一个新结点，此时pre和p分别指向的节点形成了一个前驱后继对，为下一次线索的连接做准备
+    InThread(p, pre); // 递归，右子树线索化
+  }
+}
+// 通过中序遍历建立中序线索二叉树的主程序如下：
+void createInThread(TBTNode *root) {
+  TBTNode *pre = nullptr;
+  if (root != nullptr) {
+    InThread(root, pre);
+    pre->rchild = nullptr; // 非空树线索化
+    pre->rtag = 1;         // 处理中序最后一个节点
+  }
+}
+
+// 遍历中序线索二叉树
+// 在以p为跟的中序线索二叉树中，中序序列下的第一个节点的算法如下
+TBTNode *First(TBTNode *p) {
+  while (p->ltag == 0) // ltag不为0时，lchild是左孩子
+    p = p->lchild;     // 左下结点（不一定是叶节点）
+  return p;
+}
+
+// 求在中序线索二叉树中，结点p在中序下的后继节点的算法
+TBTNode *Next(TBTNode *p) {
+  if (p->rtag == 0) // 如果等于0，则rchild是右孩子
+    return First(p->rchild);
+  else
+    return p->rchild; // 如果不等于0则是后继结点
+}
+
+char Visit(TBTNode *p) { return p->data; }
+void Inorder(TBTNode *root) {
+  for (TBTNode *p = First(root); p != nullptr;
+       p = Next(p)) // 找到左孩子的第一个结点，然后依次找后继结点
+    Visit(p);
+}
+
+// 前序线索化二叉树
+void preThread(TBTNode *p, TBTNode *&pre) {
+  if (p != nullptr) {
+    if (p->lchild == nullptr) {
+      p->lchild = pre;
+      p->ltag = 1;
+    }
+    if (pre != nullptr && pre->rchild == nullptr) {
+      pre->rchild = p;
+      pre->rtag = 1;
+    }
+    pre = p;
+    // 这里在递归入口处有限制条件，左右指针不是线索才继续递归
+    if (p->ltag == 0)
+      preThread(p->lchild, pre);
+    if (p->rtag == 0)
+      preThread(p->rchild, pre);
+  }
+}
+
+// 在前序线索二叉树上执行前序遍历的算法如下：
+void preorder(TBTNode *root) {
+  if (root != nullptr) {
+    TBTNode *p = root;
+    while (p != nullptr) {
+      while (p->ltag == 0) { // 当p不是线索时，则便访问边左移动
+        Visit(p);
+        p = p->lchild;
+      }
+      Visit(p);      // 此时p是线索，访问p
+      p = p->rchild; // 此时p左孩子不在，若右指针非空，则不论是否为线索都指向其后继
+    }
+  }
+}
+
+// 后序线索二叉树
+void postThread(TBTNode *p, TBTNode *&pre) {
+  if (p != nullptr) {
+    postThread(p->lchild, pre); // 递归，左子树线索化
+    postThread(p->rchild, pre); // 递归，右子树线索化
+  }
+  if (p->lchild == nullptr) {
+    p->lchild = pre;
+    p->ltag = 1;
+  }
+  if (pre->rchild == nullptr) {
+    pre->rchild = p;
+    pre->rtag = 1;
+  }
+  pre = p; // 指向下一个节点
+}
+
+// 若结点x是二叉树的根，则其后继为空
+// 若结点x是其双亲的右孩子，或是其双亲的左孩子且其双亲没有右子树，则其后继结点为其双亲
+// 若结点x是其双亲的左孩子，且其双亲有右子树，则其后继为双亲右子树上按后序遍历列出的第一个节点
