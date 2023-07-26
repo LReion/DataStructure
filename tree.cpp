@@ -490,3 +490,128 @@ BTNode *CreateBT(char pre[], char in[], int L1, int R1, int L2, int R2) {
   s->rchild = CreateBT(pre, in, L1 + i - L2 + 1, R1, i + 1, R2);
   return s;
 }
+
+// 给出一颗二叉树，如果求它含有的结点数量，可以用递归的方法，但是递归的方法效率低下
+int n = 0;
+void count(BTNode *p) {
+  if (p != nullptr) {
+    ++n; // 来到一个结点时，n自动增1
+    count(p->lchild);
+    count(p->rchild);
+  }
+}
+
+// 换一种想法，给出一颗二叉树，分几步来找出其结点数
+int countv2(BTNode *p) {
+  int n1, n2;
+  if (p == nullptr) {
+    return 0;
+  } else {
+    n1 = countv2(p->lchild); // 计算左子树的结点数
+    n2 = countv2(p->rchild); // 计算右子树结点数
+    return n1 + n2 + 1;      // 左右子树结点数加上根结点数
+  }
+}
+
+// 计算一颗给定二叉树的所有叶子结点数
+int countv3(BTNode *p) {
+  int n1, n2;
+  if (p == nullptr) {
+    return 0;
+  } else {
+    if (p->lchild == nullptr &&
+        p->rchild == nullptr) { // 如果左右子树都为空，则返回1说明是叶子结点
+      return 1;                 // 如果是叶子结点，则返回1
+    } else {
+      n1 = countv3(p->lchild); // 计算左子树的叶子结点数
+      n2 = countv3(p->rchild); // 计算右子树的叶子结点数
+      return n1 + n2;          // 左右子树叶子结点数相加
+    }
+  }
+}
+
+// 假设二叉树采用二叉链存储结构，设计一个算法，利用结点的右孩子指针rchild将
+// 一颗二叉树的叶子节点按照从左往右的顺序串成一个单链表（在题目中定义两个指针
+// head和tail，分别指向单链表的头结点和尾结点）
+void link(BTNode *p, BTNode *&head, BTNode *&tail) {
+  if (p == nullptr) {
+    // 关键步骤
+    if (p->lchild == nullptr && p->rchild == nullptr) { // 判断是不是叶子节点
+      if (head ==
+          nullptr) { // 看head是不是nullptr，如果是，则说明是第一个叶子节点，则将head和tail都指向它
+        head = p;
+        tail = p;
+      } else {
+        tail->rchild = p; // 如果不是第一个叶子节点，则将tail的右孩子指向它
+        tail = p; // 然后将tail指向它
+      }
+    }
+    // 关键步骤结束
+    link(p->lchild, head, tail); // (1)
+    link(p->rchild, head, tail); // (2)
+    // 上述程序段关键步骤部分还可以放在（1）（2）之间，或者之后，即中序、后序遍历一样可以得到同样的结果。
+  }
+}
+
+// 在二叉树的二叉链存储结构中，增加一个指向双亲的parent结点，设计一个算法，给这个指针赋值，并输出所有结点到根节点的路径。
+typedef struct BTNodev2 {
+  char data;
+  struct BTNodev2 *lchild, *rchild, *parent;
+} BTNodev2;
+void triBtree(
+    BTNodev2 *p,
+    BTNodev2 *
+        q) { // 此处参数q始终指向当前访问结点q的双亲结点，当p为根节点是，q为nullptr
+  if (p != nullptr) {
+    p->parent = q; // 将当前访问的结点指针的parent指向q
+    q = p; // 将q指向p，因为下面要对p的左右子树进行递归，所以要将p的地址传递给q
+    triBtree(p->lchild, q); // 修改其左子树中所有结点的parent指针
+    triBtree(p->rchild, q); // 修改其右子树中所有结点的parent指针
+  }
+}
+
+// 上一步完成了parent的复制，下面要输出所有结点到根节点的路径
+void printPath(BTNodev2 *p) {
+  while (p != nullptr) { // p不为空时就打引起data域值
+    cout << p->data << " " << endl;
+    p = p->parent; // 找到其双亲结点
+  }
+}
+
+// 打印所有路径，遍历所有结点调用printPath
+void allPath(BTNodev2 *p) {
+  if (p != nullptr) {
+    printPath(p);
+    allPath(p->lchild);
+    allPath(p->rchild);
+  }
+}
+
+// 假设满二叉树b的先序遍历序列已经存在于数组中，设计一个算法将其转换成后序遍历序列
+// 本题一直先序遍历序列，则序列中第一个元素即为根节点。将除去第一个元素之外的元素序列分成前后相等的两个子序列，
+// 前一半为左子树上的结点，后一半为右子树上的节点。只需将根节点移动到整个序列的末尾，然后分别取递归处理序列的前一半和后一半即可
+// 从根左右到左右根，只需将根节点放在序列末尾，然后将序列分成两半，分别递归处理即可
+void change(char pre[], int L1, int R1, char post[], int L2, int R2) {
+  if (L1 <= R1) {
+    post[R2] = pre[L1]; // 将根节点移动到整个序列的末尾
+    change(pre, L1 + 1, (L1 + 1 + R1) / 2, post, L2,
+           (L2 + R2 - 1) / 2); // 递归处理前一半
+    change(pre, (L1 + 1 + R1) / 2 + 1, R1, post, (L2 + R2 - 1) / 2 + 1,
+           R2 - 1); // 递归处理后一半
+  }
+}
+
+// 假设二叉树采用二叉链存储结构，设计一个算法，求二叉树b中值为x的结点的层次号
+int L = 1;
+void leno(BTNode *p, char x) {
+  if (p != nullptr) {
+    if (p->data ==
+        x) { // 当第一次来到这个节点时，对data域进行检查，看是否等于x，如果相等，则打印出其层次号L
+      cout << L << endl;
+    }
+    ++L; // 打印完层次好后，指针p要进入下一层结点，因此L要自增1，代表下一层的层次号
+    leno(p->lchild, x);
+    leno(p->rchild, x);
+    --L; // p指针将要由下一层返回上一层，因此L要自减1，代表上一层次号
+  }
+}
