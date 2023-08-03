@@ -241,3 +241,97 @@ void Kruskal(MGraph g, int &sum, Road road[]) {
     }
   }
 }
+
+void printPath(int path[], int a) {
+  int stack[maxSize], top = -1;
+  /* 这个循环由叶子节点到根节点的顺序将其入栈 */
+  while (path[a] != -1) {
+    stack[++top] = a;
+    a = path[a];
+  }
+  stack[++top] = a;
+  while (top != -1)
+    cout << stack[top--] << " "; // 出栈并打印栈元素实现了顶点的逆序打印
+}
+// 迪杰斯特拉算法，求图中某一顶点到其余个顶点的最短路径。
+void Dijkstra(MGraph g, int v, int dist[], int path[]) {
+  int set[maxSize];
+  int min, i, j, u;
+  // 对数组开始初始化
+  for (i = 0; i < g.n; i++) {
+    dist[i] = g.edges[v][i];
+    set[i] = 0;
+    if (g.edges[v][i] < INF)
+      path[i] = v;
+    else
+      path[i] = -1;
+  }
+  set[v] = 1;
+  path[v] = -1;
+  for (i = 0; i < g.n - 1; i++) {
+    min = INF;
+    // 每次从剩余顶点中选出一个顶点，通往这个顶点的路径在通往所有剩余顶点的路径中是最短的
+    for (j = 0; j < g.n; j++) {
+      if (set[j] == 0 && dist[j] < min) {
+        u = j;
+        min = dist[j];
+      }
+      set[u] = 1; // 将刚刚选出的顶点并入最短路径中
+      // 以刚并入的顶点作为中间点，对所有通往剩余顶点的路径进行检查
+      for (j = 0; j < g.n; j++) {
+        // 判断顶点u的加入是否会出现通往顶点j的更短路径，如果出现则更新dist[j]和path[j]
+        // 否则什么都不做
+        if (set[j] == 0 && dist[u] + g.edges[u][j] < dist[j]) {
+          dist[j] = dist[u] + g.edges[u][j];
+          path[j] = u;
+        }
+      }
+    }
+  }
+}
+// 函数结束时，dist[]数组中存放了v点到其余顶点的最短路径长度，path[]中存放v点到其他个顶点的最短路径
+// 由算法代码可知，本算法主要部分为一个双重循环，外层循环内部有两个并列的单层循环，可以任取一个循环内的操作
+// 作为基本操作，基本执行的总次数即为双重循环执行的次数，为n^2次，所以时间复杂度为O(n^2)
+
+// 求图中任意一对顶点间的最短路径，则用弗洛伊德算法。
+// 弗洛伊德算法打印最短路径
+void printPath(int u, int v, int path[][maxSize], int A[][maxSize]) {
+  // 输出从u到v的最短路径上的顶点序列
+  if (A[u][v] == INF)
+    cout << "No Path !" << endl;
+  else {
+    if (path[u][v] == -1)
+      cout << v << " ";
+    else {
+      int mid = path[u][v];
+      printPath(u, mid, path, A); // 处理前半段
+      printPath(mid, v, path, A); // 处理后半段
+    }
+  }
+}
+
+void Floyd(MGraph *g, int Path[][maxSize], int A[][maxSize]) {
+  // 图g的边矩阵中，用INF来表示两点之间不存在边
+  int i, j, k;
+  // 初始化A[]和Path[][]
+  for (i = 0; i < g->n; ++i) {
+    for (j = 0; j < g->n; ++j) {
+      A[i][j] = g->edges[i][j];
+      Path[i][j] = -1;
+    }
+  }
+  // 三重循环，每次循环都尝试将顶点k作为中间点，如果经过顶点k的路径比原来的路径更短，则更新A[i][j]和Path[i][j]
+  for (k = 0; k < g->n; k++) {
+    for (i = 0; i < g->n; i++) {
+      for (j = 0; j < g->n; j++) {
+        if (A[i][j] > A[i][k] + A[k][j]) {
+          A[i][j] = A[i][k] + A[k][j];
+          Path[i][j] = k;
+        }
+      }
+    }
+  }
+}
+
+// 由算法代码可知，本算法主要部分为一个三重循环，循环内部有一个单层循环，可以任取一个循环内的操作作为基本操作，
+// 基本执行的总次数即为三重循环执行的次数，为n^3次，所以时间复杂度为O(n^3)
