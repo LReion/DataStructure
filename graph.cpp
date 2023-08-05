@@ -335,3 +335,59 @@ void Floyd(MGraph *g, int Path[][maxSize], int A[][maxSize]) {
 
 // 由算法代码可知，本算法主要部分为一个三重循环，循环内部有一个单层循环，可以任取一个循环内的操作作为基本操作，
 // 基本执行的总次数即为三重循环执行的次数，为n^3次，所以时间复杂度为O(n^3)
+
+// 拓扑排序
+// AOV网
+// 活动在顶点上的网（Activity On Vertex
+// Network）简称AOV网，是指用顶点表示活动，用弧表示活动之间的优先关系的有向图。
+// 顶点表示活动，弧表示活动之间的优先关系的有向图称为AOV网（Activity On Vertex
+// Network）。
+
+// 拓扑排序核心算法
+// 对一个有向无环图进行拓扑排序，是将G中所有顶点排成一个线性序列，使得图中任意一对顶点u和v，若存在由u到v的路径，
+// 则在拓扑排序中u一定在v前面。这样的一个序列称为拓扑序列。
+// 1）在一个有向图中选择一个没有前驱（入度为0）的顶点输出。
+// 2）删除1）中的顶点，并且删除从该顶点出发的全部边。
+// 3）重复1）和2），直到所有顶点输出，或者当前图中不存在无前驱的顶点为止。
+// 以邻接表为存储结构。对邻接表表头结构定义进行修改，可加上一个统计结点入度的域，以便在拓扑排序时不必每次都扫描整个邻接表。
+
+typedef struct {
+  char data;
+  int count; // count来统计顶点当前入度
+  ArcNode *firstarc;
+} VNodev2;
+typedef struct {
+  VNodev2 adjlist[maxSize]; // 邻接表
+  int n, e;                 // 顶点数和边数
+} AGraphv2;                 // 图的邻接表类型
+
+// 假设图的邻接表已经生成，并且个个顶点的入度已经统计完毕，在本算法中要设置一个栈，
+// 用来记录当前图入度为0的顶点，还要设置一个计数器n，用来记录已经输出的顶点个数。
+// 算法开始时置n为0，扫描所有i的那个点，将入度为0的顶点入栈，然后n加1，接着从栈中弹出一个顶点，输出该顶点，
+// 执行++n，并且将该顶点的所有邻接点的入度减1，如果减1后入度为0，则将该顶点入栈，重复上述过程，直到栈为空为止。
+int TopSort(AGraphv2 *G) {
+  int i, j, n = 0;
+  int stack[maxSize], top = -1;
+  ArcNode *p;
+  for (i = 0; i < G->n; i++) // 图中顶点从0开始编号
+    if (G->adjlist[i].count == 0)
+      stack[++top] = i; // 入度为0结点入栈
+  while (top != -1) {
+    i = stack[top--]; // 顶点出栈
+    ++n;              // 计数器加一记录当前节点
+    cout << i << " "; // 输出当前顶点
+    p = G->adjlist[i].firstarc;
+    // 实现了将由此顶点引出的边所指向的顶点的入度减一，并将这个过程中入度变成0的顶点入栈
+    while (p != nullptr) {
+      j = p->adjvex;
+      --(G->adjlist[j].count);
+      if (G->adjlist[j].count == 0)
+        stack[++top] = j;
+      p = p->nextarc;
+    }
+  }
+  if (n == G->n)
+    return 1;
+  else
+    return 0;
+}
