@@ -391,3 +391,71 @@ int TopSort(AGraphv2 *G) {
   else
     return 0;
 }
+
+// AOE网（Activity On Edge Network）对于活动在边上的网
+// 和AOV图的相同点：
+// 都是有向无环图
+// 不同点：AOE网表示活动，边有权值，边代表活动持续时间；顶点代表事件，事件是由图中新活动开始或者旧活动结束的表示。
+// AOV网的顶点表示活动，边无权值，边代表活动之间的先后关系。
+// 对于一个表示工程的AOE网，只存在一个入度为0的顶点，称为源点，表示整个工程的开始；也只存在一个出度为0的顶点，成为汇点，表示整个工程的结束。
+// AOE网中的每个顶点表示一个事件，每条边表示一个活动，边上的权值表示活动持续的时间，顶点的最早发生时间表示事件最早发生的时间，顶点的最晚发生时间表示事件最晚发生的时间。
+
+// 判断图中从vi到vj是否有路径，可以采用遍历的方式。遍历的起点为vi，再一次BFS推出之前遇到vj，则证明有路径，否则没路径。
+int BFSv2(AGraph *G, int vi, int vj) {
+  ArcNode *p;
+  int que[maxSize], front = 0, rear = 0;
+  int visit[maxSize];
+  int i, j;
+  for (i = 0; i < G->n; i++)
+    visit[i] = 0;
+  rear = (rear + 1) % maxSize;
+  que[rear] = vi;
+  visit[vi] = 1;
+  while (front != rear) {
+    front = (front + 1) % maxSize;
+    j = que[front];
+    if (j == vj) // 对顶点的访问函数换成判断当前顶点是否为vj即可
+      return 1;
+    p = G->adjlist[j].firstarc;
+    while (p != nullptr) {
+      if (!visit[p->adjvex]) {
+        rear = (rear + 1) % maxSize;
+        que[rear] = p->adjvex;
+        visit[p->adjvex] = 1;
+      }
+      p = p->nextarc; // p指向j的下一条边
+    }
+  }
+}
+// 本算法主体为一个双重循环，基本操作有两种：一种是顶点进队，另一种是边的访问。
+// 最坏情况为遍历图中所有顶点后才找到通路，此时所有顶点都进队一次，所有边都被访问一次，
+// 因为基本操作的总次数为O(n+e)，所以时间复杂度为O(n+e)。
+
+// 判断顶点r到G的每个顶点是否有路径可达，可以通过深度优先搜索遍历的方法。以r为起点进行深度有限搜索遍历，
+// 若在函数dfs()退出前已经访问过所有顶点，则r为根。要打印出所有的根节点，可以对每个顶点都进行一次深度优先搜索遍历，
+// 如果是根则打印
+int visitv2[maxSize]; // 假设常量maxSize已经定义
+int sum = 0;
+void DFSv2(AGraph *G, int v) {
+  ArcNode *p;
+  visitv2[v] = 1;
+  ++sum;
+  p = G->adjlist[v].firstarc;
+  while (p != nullptr) {
+    if (!visitv2[p->adjvex]) {
+      DFSv2(G, p->adjvex);
+    }
+    p = p->nextarc;
+  }
+}
+void print(AGraph *G) {
+  int i, j;
+  for (i = 0; i < G->n; i++) {
+    sum = 0; // 每次选取一个新的结点时计数器清零
+    for (j = 0; j < G->n; j++)
+      visitv2[j] = 0; // 每次进行DFS访问时标记数组清零
+    DFSv2(G, i);
+    if (sum == G->n) // 当图中顶点全部被访问时，则判断为根，输出
+      cout << i << endl;
+  }
+}
