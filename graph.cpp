@@ -459,3 +459,138 @@ void print(AGraph *G) {
       cout << i << endl;
   }
 }
+// 对于一个有向图，不用拓扑排序，实现判断图中是否存在经过给定顶点v0的环的算法
+// 有深度优先搜索算法可知，在一个顶点v的所有边都被检查过之后，则要返回顶点v，进而退回上一个顶点，
+// 重新开始检查上一个顶点的其他边。假如图中不存在回路，则在v处遍历v的其他邻接顶点的过程结束前，
+// 不会出现一条指向v的边，可以通过检查是否有这样一条边来判断是否存在回路。
+bool DFSForCircle(AGraph *G, int v, bool visited[]) {
+  bool flag;
+  ArcNode *p;
+  visited[v] = true;
+  for (p = G->adjlist[v].firstarc; p != nullptr; p = p->nextarc) {
+    if (visited[p->adjvex] == true) // 如果出现一条边指向v，则存在回路
+      return true;
+    else
+      flag = DFSForCircle(G, p->adjvex, visited);
+    if (flag == true)
+      return true;
+    visited[p->adjvex] = false; // 递归返回时抹除遍历
+  }
+  return false;
+}
+
+// 写出从图的邻接表转换成邻接矩阵表示的算法，图为无权图
+void AGraphToMGraph(MGraph &g1, AGraph *g2) {
+  ArcNode *p;
+  int i, j;
+  // 双重矩阵讲g1邻接矩阵清0
+  for (i = 0; i < g1.n; i++)
+    for (j = 0; j < g1.n; j++)
+      g1.edges[i][j] = 0;
+  // 用p指针扫描邻接表中所有边结点
+  for (i = 0; i < g2->n; i++) {
+    p = g2->adjlist[i].firstarc; // 指向i的第一个邻接点
+    while (p != nullptr) {       // 如果边不为空
+      g1.edges[i][p->adjvex] = 1;
+      p = p->nextarc;
+    }
+  }
+  g1.n = g2->n;
+  g1.e = g2->e;
+}
+
+// 设有向图用邻接表表示，图有n个顶点，图采用简化的表示方法，顶点信息与其在数组中的下标相同，
+// 表示为0-n-1，尝试写一个算法求顶点k的入度。
+int indegree(AGraph *g, int k) {
+  ArcNode *p;
+  int i, sum;
+  sum = 0;
+  for (i = 0; i < g->n; i++) {
+    p = g->adjlist[i].firstarc;
+    while (p != nullptr) {
+      if (p->adjvex == k) { // 如果顶点i出发的另一端点是k，则计数器加1
+        sum++;
+        break;
+      }
+    }
+    p = p->nextarc;
+  }
+  return sum; // 返回k的入度
+}
+
+// 写出以邻接表为存储结构的图的深度优先搜索遍历算法的非递归算法
+void dfsv2(AGraph *g, int v) {
+  ArcNode *p;
+  int stack[maxSize], top = -1; // 定义一个栈来记录访问过程中的顶点
+  int i, k;
+  int visit[maxSize];
+  for (i = 0; i < g->n; i++)
+    visit[i] = 0;   // 访问标记数组初始化
+  Visit(g, v);      // 访问顶点
+  stack[++top] = v; // 标记初始顶点入栈
+  while (top != -1) {
+    k = stack[top];             // 取栈顶元素
+    p = g->adjlist[k].firstarc; // p指向该顶点第一条边
+    // p沿着边走并将图中经过的顶点入栈
+    while (p != nullptr && visit[p->adjvex] == 0)
+      p = p->nextarc; // 找到当前顶点第一个没访问过的邻接结点或者当p走到当前链表尾部时，while循环停止
+    if (p ==
+        nullptr) // 如果p到达当前链表尾部，则说明当前顶点的所有点都访问完毕，当前顶点出栈
+      --top;
+    else { // 否则访问当前邻接点入栈
+      Visit(g, p->adjvex);
+      visit[p->adjvex] = 1;
+      stack[++top] = p->adjvex;
+    }
+  }
+}
+
+// 省政府“畅通工程”的目的是使全省任何两个村庄件都可以实现公路交通（但不一定有直接的公路相连），
+// 只要能间接通过公路到达即可）。现得到城镇道路统计表，表中列出了任意两镇间修建道路的费用，
+// 以及该道路是否已经修通的状态，全省一共N个村庄，编号从0-N-1。先写程序，计算出全省畅通需要的最低成本。
+// 道路信息保存在road[]数组中，road数组定义如下：
+typedef struct {
+  int a, b; // a，b为道路两端两个村庄
+  int cost; // 如果a、b间需要修路，则cost为修路费用
+  int is; // is等于0代表a、b间还未修路，is等于1代表a、b间已经修路
+} Roadv2;               // 道路结构体类型
+Roadv2 roadv2[maxSize]; // 定义road数组，保存道路信息
+
+// 本题考察的是最小生成树算法的应用，要实现全省各个村庄之间的畅通，就要找到一棵最小生成树，
+// 只需要根据道路统计表，建立最小生成树即可。因为有些村庄间道路已经存在，所以只需要再此
+// 基础上继续建立。
+
+int getRoot(int a, int set[]) { // 查早并查集中根节点的函数
+  while (a != set[a])
+    a = set[a];
+  return a;
+}
+#define N 20
+#define M 20
+int Lowcost(Roadv2 road[]) {
+  int i;
+  int a, b, min;
+  int set[maxSize];
+  min = 0;
+  for (i = 0; i < N; i++)
+    set[i] = i;
+  for (i = 0; i < M; i++) {
+    if (road[i].is == 1) { // 如果a、b间已经修路，则将a、b所在的集合合并
+      a = getRoot(road[i].a, set);
+      b = getRoot(road[i].b, set);
+      if (a != b)
+        set[a] = b;
+    }
+  }
+  // 假设函数sort()已经定义，既对road[]中M条道路按照花费进行递增排序
+  sort(road, M);
+  // 下面这个循环从road[]数组中逐个跳出应修的道路
+  for (i = 0; i < M; i++)
+    // 当a、b不属于一个集合时，并且a、b间没有道路时，将a、b并入同一集合，并记录修建a、b间道路的花费
+    if (road[i].is == 0 &&
+        (a = getRoot(road[i].a, set)) != (b = getRoot(road[i].b, set))) {
+      set[a] = b;
+      min += road[i].cost;
+    }
+  return min;
+}
