@@ -241,3 +241,74 @@ void mergeSort(int A[], int low, int high) {
 // 整个归并排序的的时间复杂度为O(nlog2n)。即平均情况下、最好情况下和最坏情况下的时间复杂度均为O(nlog2n)。
 // 空间复杂度分析：
 // 因归并排序需要转存整个待排序列，因此空间复杂度为O(n)。
+
+// 设计一个算法，使得在尽可能少的时间内重排数组，将所有取负值得关键字放在所有取非负值得关键字之前。
+// 1）给出算法的基本设计思想
+// 2）根据设计思想，采用C或C++语言描述算法，并在关键之处给出注释。
+// 3）分析本算法的时间复杂度和空间复杂度。
+// 1）算法基本设计思想
+// 因为只需将负数排到前面而无需进行精准排列顺序，因此本算法采用两端扫描的方式，
+// 类似于快速排序中的划分方法，左边扫描到非负数时停止，开始扫描右边，遇到负数时
+// 与左边当前的关键字交换。如此交替进行，一趟下来就可以完成排序。
+void Resort(int R[], int n) {
+  int i = 0, j = n - 1;
+  int temp;
+  while (i < j) {             // i<j表示尚未扫描完毕
+    while (i < j && R[i] < 0) // 遇到负数则继续往前扫描
+      i++;
+    temp = R[i];
+    while (i < j && R[j] >= 0) // 遇到正数则继续向左扫描
+      j--;
+    R[i++] = R[j]; // 交换正负数位置，并移动指针
+    R[j--] = temp;
+  }
+}
+// 本算法的主题虽然是双重循环，但在任何情况下循环的总执行次数均为n，即基本操作执行次数为n，
+// 因此时间复杂度为O(n) ，
+// 本算法中的额外空间只有一个temp，因此空间复杂度为O(1)。
+
+// 设向量A[0, ...,
+// n-1]中存有n个互不相同的整数，每个关键字的值均在0~n-1之间。试写一个算法，
+// 将向量A排序，结果输出到另一个向量B[0, ..., n-1]中。
+void Sort(int A[], int B[], int n) {
+  int i;
+  for (i = 0; i < n; i++)
+    B[A[i]] = A[i]; // 数组A[]中每个关键字的值即为本关键字在数组B[]中的下标
+}
+
+// 给定一组关键字，创建一个带头结点的链表，设计一个直接插入排序算法，对这个单链表进行递增排序。
+#include "ChainList.cpp"
+void CreateLink(LNode *&h, char R[], int n) {
+  int i;
+  LNode *s, *t;
+  h = (LNode *)malloc(sizeof(LNode));
+  h->next = nullptr;
+  t = h;
+  for (i = 0; i < n; i++) {
+    s = (LNode *)malloc(sizeof(LNode));
+    s->data = R[i];
+    t->next = s;
+    t = s;
+  }
+  t->next = nullptr;
+}
+void SortLink(LNode *h) { // 排序函数
+  LNode *p, *p1, *q, *pre;
+  if (h->next != nullptr) {
+    p = h->next->next;       // p指向第二个关键字结点
+    h->next->next = nullptr; // 产生指代一个节点的有序表
+    while (p != nullptr) {   // p不为空时，遍历链表
+      pre = h;               // pre指向q的前驱节点
+      q = pre->next; // 通过q和pre来保存当前访问的结点和前驱节点位置
+      while (q != nullptr && q->data < p->data) { // 寻找插入位置
+        pre = q;                                  // pre指向q的前驱节点
+        q = q->next;                              // q指向下一个结点
+      }
+      // 找到插入位置
+      p1 = p->next;        // 记录下一个结点的位置
+      p->next = pre->next; // 将p插入到pre之后
+      pre->next = p;
+      p = p1; // p指向下一个结点
+    }
+  }
+}
